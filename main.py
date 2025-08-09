@@ -1,4 +1,6 @@
 from server import mcp
+import tools.fastmcp_youtrack
+
 import logging
 logging.basicConfig(level=logging.DEBUG)
 

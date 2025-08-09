@@ -6,8 +6,14 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastmcp>=2.11.1",
+    "google>=3.0.0",
+    "google-api-python-client>=2.178.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.2",
     "httpx>=0.28.1",
+    "langchain>=0.3.27",
+    "langchain-anthropic>=0.3.18",
     "mcp[cli]>=1.12.3",
     "pyarrow>=21.0.0",
-    "youtrack_lap"
+    "youtrack-lap>=0.1.1",
 ]

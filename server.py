@@ -1,6 +1,4 @@
-from fastmcp import FastMCP # type: ignore
-import logging
+from tools.fastmcp_youtrack import mcp
 
-# This is the shared MCP server instance
-
-mcp = FastMCP("youtrack_server")
+if __name__ == "__main__":
+    mcp.run()
