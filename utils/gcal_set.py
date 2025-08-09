@@ -7,7 +7,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from .gcal_auth import set_credentials
+from .gcal_auth import get_credentials 
 
 def create_event(summary, start_time, end_time, description=None, attendees=None):
     """
@@ -24,7 +24,7 @@ def create_event(summary, start_time, end_time, description=None, attendees=None
         Event details if successful, error message otherwise
     """
         
-    creds = set_credentials()
+    creds = get_credentials()
     if not creds.valid and creds.expired and creds.refresh_token:
         creds.refresh(Request())
 

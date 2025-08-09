@@ -7,7 +7,7 @@ from googleapiclient.errors import HttpError
 
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
-def set_credentials():
+def get_credentials():
     try:
         creds = None
         if os.path.exists("secrets/token.json"):
@@ -22,6 +22,7 @@ def set_credentials():
                 # Save the credentials for the next run
             with open("secrets/token.json", "w") as token:
                 token.write(creds.to_json())
+        return creds
     except Exception as error:
         print(f"An error occurred: {error}")
 

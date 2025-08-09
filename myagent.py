@@ -8,7 +8,7 @@ from langchain.agents import create_tool_calling_agent
 
 # Import tools
 from tools.langchain_youtrack import list_projects, list_issues_from_project, list_work_items_from_issue, create_work_item
-from tools.langchain_timer import get_current_time
+from tools.langchain_timer import get_current_time, get_current_date
 from tools.langchain_gcal import get_gcal_events, set_gcal_event
 
 def read_anthropic_token():
@@ -26,6 +26,7 @@ working_tools = [
         list_work_items_from_issue, 
         create_work_item, 
         get_current_time,
+        get_current_date,
         get_gcal_events,
         set_gcal_event
     ]
@@ -64,14 +65,20 @@ if __name__ == "__main__":
         os.environ["ANTHROPIC_API_KEY"] = read_anthropic_token()
 
     # Example 1: Get all projects
-    print("--- Example 1: Get all YouTrack projects ---")
+    print("--- STEP-1: Get all YouTrack projects ---")
     response = agent_executor.invoke({"input": "List all YouTrack projects.", "chat_history": []})
     print(f"\nAgent's Final Response: {response['output']}")
     print("-" * 50)
 
     # Example 2: Gell all events of the day
-    print("\n--- Example 2: Get all events of today ---")
-    response = agent_executor.invoke({"input": "List all events of today planned on my calendar.", "chat_history": []})
+    print("\n--- STEP-2: Get all events of today ---")
+    response = agent_executor.invoke({"input": "List all events of date 08/11/2025 planned on my calendar during business hours.", "chat_history": []})
     print(f"\nAgent's Final Response: {response['output']}")
     print("-" * 50)
+
+    print("\n--- STEP-3: Propose Youtrack work item to create ---")
+    response = agent_executor.invoke({"input": "Based on events in the calendar make a proposition about work item to create on youtrack", "chat_history": []})
+    print(f"\nAgent's Final Response: {response['output']}")
+    print("-" * 50)
+
 
