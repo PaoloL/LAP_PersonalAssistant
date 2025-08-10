@@ -20,7 +20,12 @@ def get_events(start_date, days_window):
 
     try:
         service = build("calendar", "v3", credentials=creds)
-        start_date = datetime.datetime.fromisoformat(start_date)
+        # Handle different date formats
+        try:
+            start_date = datetime.datetime.fromisoformat(start_date)
+        except ValueError:
+            # Try parsing as YYYY-MM-DD format
+            start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         end_date = start_date + datetime.timedelta(days=int(days_window))
         # Convert date in Gcal required format
         start_iso = start_date.isoformat() + 'Z'

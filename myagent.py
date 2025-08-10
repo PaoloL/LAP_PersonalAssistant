@@ -33,7 +33,7 @@ working_tools = [
 
 # Set up your LLM to use Claude
 anthropic_api_key = read_anthropic_token()
-llm = ChatAnthropic(model="claude-3-5-sonnet-20241022", temperature=0, api_key=anthropic_api_key)
+llm = ChatAnthropic(model="claude-sonnet-4-20250514", temperature=0, api_key=anthropic_api_key)
 
 # Define the prompt for the agent
 prompt = ChatPromptTemplate.from_messages(
