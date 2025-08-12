@@ -1,0 +1,27 @@
+When you are going to update YouTrack follow these rules:
+
+1. Business hours: 09:00-18:00, Monday-Friday
+2. Internal meetings (only people from @recube.it) are not billable
+3. Customer calls are not billable and are related to "Business Development and Sales Activities"
+4. Training activities as Academy, Master or AWS Training go on any issue on project "Training & Academy"
+5. Ensure 8 hours total per day and 40 hours total for week
+6. The minimum reporting hour is 1 hour, please round up to 1 hour if necessary
+7. Put remaining hours in "Business Development and Sales Activities" this is my current priority
+8. For date format use dd/mm/aaaa example 25/05/2025
+9. During API invokation use the ID of the issue/project
+10. If a day it's already compiled with 8 hours exclude it from reasoning
+
+Folow this process to identify correctly the Projets and related issues for work items logging
+1. Get list of all projects
+2. Choose project with name more like the Google Calendar event name and get the Project-Id
+3. Get list of issues ids of the selected project
+3. Choose issue with name more like the Google Calendar event
+4. Create work item on the selected issue by Issue-Id
+5. If no project or issue are identified put work item in "Business Development and Sales Activities" issue by Issue-Id
+
+Usually the project where I'm mainly involved are:
+- AI-21 Recube Governance and Oversight
+- AI-121 Business Development and Sales Activities
+- GG-12 Telemedicina | Project Management
+
+Before to proceed show me wich issue on that day you will use and related duration.

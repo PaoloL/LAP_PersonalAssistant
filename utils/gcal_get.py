@@ -44,6 +44,14 @@ def get_events(start_date, days_window):
             .execute()
         )
         events = events_result.get("items", [])
-        return events
+        filtered_events = []
+        for event in events:
+            filtered_event = {
+                'title': event.get('summary', 'No Title'),
+                'start': event['start'].get('dateTime', event['start'].get('date')),
+                'end': event['end'].get('dateTime', event['end'].get('date'))
+            }
+            filtered_events.append(filtered_event)
+        return filtered_events
     except HttpError as error:
         print(f"An error occurred: {error}")
