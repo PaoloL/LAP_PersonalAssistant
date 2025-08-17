@@ -17,5 +17,5 @@ dependencies = [
     "langgraph>=0.6.4",
     "mcp[cli]>=1.12.3",
     "pyarrow>=21.0.0",
-    "youtrack-lap>=0.1.1",
+    "youtrack-lap>=1.0.0",
 ]

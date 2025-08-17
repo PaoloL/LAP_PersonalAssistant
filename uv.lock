@@ -887,7 +887,7 @@ requires-dist = [
     { name = "langgraph", specifier = ">=0.6.4" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.12.3" },
     { name = "pyarrow", specifier = ">=21.0.0" },
-    { name = "youtrack-lap", specifier = ">=0.1.1" },
+    { name = "youtrack-lap", specifier = ">=1.0.0" },
 ]
 
 [[package]]
@@ -1702,15 +1702,15 @@ wheels = [
 
 [[package]]
 name = "youtrack-lap"
-version = "0.1.1"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f3/9f/2967ff82c34a11fc364f0a458bfdb8ce9b7bc14120b1c955913db830236c/youtrack_lap-0.1.1.tar.gz", hash = "sha256:a45d45b5bd1dab22c98677e7604303a9cbbefdda9642bcb7515a39b4d38dce05", size = 29285, upload-time = "2025-08-07T14:31:36.618Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/b2/111a4f42db63d27e0e8f032d89ad6cceb3a2a0942bd29c3bc28e96af6106/youtrack_lap-1.0.0.tar.gz", hash = "sha256:5e74607feacaa61693b3551f26cd888dbf3b9c89d8b696221a85577bc7bda5ba", size = 29567, upload-time = "2025-08-13T13:57:26.094Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/5a/510e365eb015b9c1923bd0ac7527c54f973acdc85b52b33476c42d4eb0f6/youtrack_lap-0.1.1-py3-none-any.whl", hash = "sha256:c9058d8e80e630d5179fde6d0d65734a1c07f71db5c1462c2edaec1d223e4f14", size = 3809, upload-time = "2025-08-07T14:31:35.232Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/3d/3a0f6beeb4076f5611125498bffc9411a94ec4fa00b0641dd0a275cde651/youtrack_lap-1.0.0-py3-none-any.whl", hash = "sha256:57e574de93b2203bb5c67c85638b7b4456b1f2d12e473a59e91e6e0daf5fc352", size = 5197, upload-time = "2025-08-13T13:57:24.974Z" },
 ]
 
 [[package]]

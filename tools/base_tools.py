@@ -33,6 +33,11 @@ def get_today_date() -> str:
     return datetime.now().strftime("%Y-%m-%d")
 
 @tool
+def get_yesterday_date() -> str:
+    """Get yesterday's date (keyword: Yesterday)"""
+    return (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+
+@tool
 def get_tomorrow_date() -> str:
     """Get tomorrow's date (keyword: Tomorrow)"""
     return (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
@@ -42,6 +47,14 @@ def get_this_week_range() -> str:
     """Get this week's date range (keyword: This Week)"""
     today = datetime.now()
     start = today - timedelta(days=today.weekday())
+    end = start + timedelta(days=6)
+    return f"{start.strftime('%Y-%m-%d')} to {end.strftime('%Y-%m-%d')}"
+
+@tool
+def get_next_week_range() -> str:
+    """Get next week's date range (keyword: Next Week)"""
+    today = datetime.now()
+    start = today + timedelta(days=7 - today.weekday())
     end = start + timedelta(days=6)
     return f"{start.strftime('%Y-%m-%d')} to {end.strftime('%Y-%m-%d')}"
 
@@ -87,6 +100,6 @@ def get_this_year_range() -> str:
 BASE_TOOLS = [
     get_current_datetime, get_current_date, get_current_time, 
     get_my_business_days, get_my_business_hours,
-    get_today_date, get_tomorrow_date, get_this_week_range,
+    get_today_date, get_tomorrow_date, get_this_week_range, get_next_week_range, get_yesterday_date,
     get_this_month_range, get_next_month_range, get_previous_month_range, get_this_year_range
 ]

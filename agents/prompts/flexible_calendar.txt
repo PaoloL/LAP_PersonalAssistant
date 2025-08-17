@@ -1,6 +1,0 @@
-When finding calendar slots:
-1. Check current calendar events for conflicts
-2. Suggest available time slots during business hours (9 AM - 6 PM)
-3. Consider meeting duration requirements
-4. Propose multiple options when possible
-5. Respect existing appointments and buffer time

@@ -31,7 +31,6 @@ def get_events(start_date, days_window):
         start_iso = start_date.isoformat() + 'Z'
         end_iso = end_date.isoformat() + 'Z'
         # Call the Calendar API
-        print("Getting the events from ", start_iso, " to ", end_iso, " ( ", days_window, " days window)", )
         events_result = (
             service.events()
             .list(
@@ -49,7 +48,8 @@ def get_events(start_date, days_window):
             filtered_event = {
                 'title': event.get('summary', 'No Title'),
                 'start': event['start'].get('dateTime', event['start'].get('date')),
-                'end': event['end'].get('dateTime', event['end'].get('date'))
+                'end': event['end'].get('dateTime', event['end'].get('date')),
+                'participants': [attendee.get('email', '') for attendee in event.get('attendees', [])]
             }
             filtered_events.append(filtered_event)
         return filtered_events
