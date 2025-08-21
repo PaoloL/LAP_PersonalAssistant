@@ -16,7 +16,7 @@ from tools.base_tools import BASE_TOOLS
 
 # Define the Main Assistant Supervisor
 async def main_supervisor(state: AgentState):
-    print("Hello, I'm the Main Assistant Supervisor deciding using LLM...")
+    print("MAIN ASSISTANT: Hello, I'm the Main Assistant Supervisor deciding using LLM...")
     
     try:
         user_input = state["input"]
@@ -29,28 +29,28 @@ async def main_supervisor(state: AgentState):
 
         # Create prompt for agent selection
         prompt = ChatPromptTemplate.from_messages([
-            ("system", 
-             "Choose the appropriate agent based on user input:\n"
-            "- RecubeTeamLeader: for YouTrack, Calendar and Business activities\n"
-            "- PersonalTeamLeader: for Task, Finance and Personal activities\n"
-            "Respond with ONLY the agent name."),
-            ("human", "{input}")
+            ("system",
+                "You are a personal assistant that support user on business and personal task\n"
+                "You are responsible to choose the appropriate team leader based on user input:\n"
+                "- RecubeTeamLeader: for YouTrack, Calendar and Business activities\n"
+                "- PersonalTeamLeader: for Task, Finance and Personal activities\n"
+                "Respond with ONLY the agent name."),
+            ("human", "{human_request}")
         ])
 
-        chain = prompt | llm
-        response = chain.invoke({"input": user_input})
+        response = llm.invoke(prompt.format(human_request=user_input))
         next_team_to_invoke = response.content.strip()
 
         # Validate LLM response
         valid_teams = ["RecubeTeamLeader", "PersonalTeamLeader"]
         if next_team_to_invoke not in valid_teams:
-            next_team_to_invoke = "RecubeTeamLeader"
+            next_team_to_invoke = "RecubeTeamLeader"       
 
-        print(f"Main Supervisor (LLM-based) chose team: {next_team_to_invoke}")
+        print(f"MAIN ASSISTANT: I want to ask support to: {next_team_to_invoke}")
         return {"next_agent": next_team_to_invoke, "path": ["main_assistant"]}
     
     except Exception as e:
-        print("Main Assistant Error: ", e)
+        print("MAIN ASSISTANT: Error ", e)
         exit
 
 # Define the Main Hierarchical Graph
@@ -102,10 +102,8 @@ async def interactive_chat():
             
             config = {"recursion_limit": 100}
             final_agent_output = ""
-            async for s in app.astream(inputs, config):
-                for node_name, node_data in s.items():
-                    if isinstance(node_data, dict) and "agent_output" in node_data:
-                        final_agent_output = node_data["agent_output"]
+            async for step in app.astream(inputs, config):
+                print(f"Step: {step}")
             
             formatted_output = final_agent_output.replace('\\n', '\n').replace('\\t', '\t')
             print(f"Assistant: {formatted_output}\n")
