@@ -99,14 +99,13 @@ async def interactive_chat():
                 continue
             print(f"\nProcessing: {user_input}")
             inputs = {"input": user_input, "agent_output": "", "next_agent": "", "path": []}
-            
-            config = {"recursion_limit": 100}
-            final_agent_output = ""
-            async for step in app.astream(inputs, config):
-                print(f"Step: {step}")
-            
+            result = await app.ainvoke(inputs)
+
+            # Since result is already a dict, use it directly
+            final_agent_output = result.get("agent_output", "")
             formatted_output = final_agent_output.replace('\\n', '\n').replace('\\t', '\t')
-            print(f"Assistant: {formatted_output}\n")
+
+            print(f"MAIN ASSISTANT: Final agent output: {formatted_output}\n")
             
         except KeyboardInterrupt:
             print("\nGoodbye!")

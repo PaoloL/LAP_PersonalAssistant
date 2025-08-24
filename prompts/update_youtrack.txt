@@ -15,13 +15,16 @@ When you are going to update YouTrack follow these rules:
 
 Folow this process to identify correctly the Projets and related issues for work items logging
 1. Get list of all projects
-2. Choose project with name more like the Google Calendar event name and get the Project-Id
-3. Get list of issues ids of the selected project
-3. Choose issue with name more like the Google Calendar event name or description
-4. Create work item on the selected issue by Issue-Id
-5. If no project or issue are identified put work item in in project "Attività Interne" issue "Business Development and Sales Activities"
+2. Choose project with name more like the Google Calendar event name
+3. Get list of issues of the selected project with name more like the Google Calendar event name
+4. Get IssueId of the selected issue, if it doesn't exist use issue "Business Development and Sales Activities" from project "Attività Interne"5. Create work item using issue-Id
+6. If no project  are identified propose to create a new project
+7. If no issue are identified propose to create a new issue
 
-The issue where I'm mainly involved are:
-- AI-21 Recube Governance and Oversight
-- AI-121 Business Development and Sales Activities
-- GG-12 Telemedicina | Project Management
+In case of suggestion from user
+1. When the user explicitly names a project or issue you MUST use that exact entity. 
+2. If the issue does not exist in a project, propose a first step to create it (in execution phase)
+
+Respond ONLY with the plan following this structure (one line per work item):
+- Day: dd/mm/yyyy, Time: HH:MM-HH:MM, Project Name: [name], Issue Name: [name], Issue ID: [id], Duration: [X hours], Description: [text]
+

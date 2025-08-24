@@ -7,13 +7,15 @@ from langchain_aws import ChatBedrock
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.prebuilt import create_react_agent
 
-from tools.langchain_youtrack import list_active_projects, list_issues_from_project, list_work_items_from_issue, create_work_item
-from tools.langchain_gcal import get_gcal_events, set_gcal_event
+from tools.youtrack_tool import *
+from tools.gcalendar_tool import *
 from tools.base_tools import BASE_TOOLS
 
 # Suppress verbose error logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('langchain_aws').setLevel(logging.CRITICAL)
+
+RECURSION_LIMIT=1000
 
 def load_prompt(filename):
         try:
@@ -98,13 +100,13 @@ def recube_youtrack_assistant_router(state: AgentState):
         
     except Exception as e:
         print(f"YoutrackAssistant: error {str(e)}")
-        return {"next_agent": "recube_youtrack_assistant", "path": ["recube_supervisor"]}
+        return {"next_agent": "recube_youtrack_assistant", "path": ["youtrack_assistant_router"]}
 
 # Define a planner agent, before to write I want to see a plan
 def recube_youtrack_writer_planner(state: AgentState):
     YOUTRACK_PLANNING_PROMPT = load_prompt("update_youtrack.txt")
     print("YoutrackAssistant: planning YouTrack work items...")
-    
+
     try:
         llm = ChatBedrock(
             model_id="eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
@@ -112,7 +114,7 @@ def recube_youtrack_writer_planner(state: AgentState):
             streaming=False
         )
 
-        current_tools = [get_gcal_events, list_active_projects, list_issues_from_project, list_work_items_from_issue] + BASE_TOOLS
+        current_tools = [get_gcal_events, list_active_projects_name, get_issue_names_by_projectName, get_issue_id_from_issue_name] + BASE_TOOLS
 
         agent = create_react_agent(
             model=llm, 
@@ -122,10 +124,15 @@ def recube_youtrack_writer_planner(state: AgentState):
             checkpointer=None
         )
 
-        user_input = state["input"]
+        # Determine if it is a replan or first execution
+        if state.get("next_agent") == "replan" and state.get("agent_output"):
+            task_description = state["input"] + state['agent_output']
+            print(f"NEW PLAN: {task_description}")
+        else:
+            task_description = state["input"]
         
         response = agent.invoke(
-            {"messages": [{"role": "user", "content": user_input}]}
+            {"messages": [{"role": "user", "content": task_description}]}
         )
         
         # Extract plan from agent response messages
@@ -163,7 +170,7 @@ def recube_youtrack_writer_executor(state: AgentState):
             streaming=False
         )
 
-        current_tools = [create_work_item] + BASE_TOOLS
+        current_tools = [get_issue_id_from_issue_name, get_project_id_from_project_name, create_work_item_by_issue_id] + BASE_TOOLS
         
         prompt = """
             You are a Youtrack assistant\n"
@@ -198,6 +205,7 @@ def recube_youtrack_reader_executor(state: AgentState):
     try:
        
         user_input = state["input"]
+        print(f"Processing request: {user_input}")
 
         llm = ChatBedrock(
             model_id="eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
@@ -210,7 +218,7 @@ def recube_youtrack_reader_executor(state: AgentState):
             You are responsible to answer to user request based on YouTrack information")
             """
 
-        current_tools = [get_gcal_events, get_gcal_events, list_active_projects, list_issues_from_project, list_work_items_from_issue] + BASE_TOOLS
+        current_tools = [get_gcal_events, list_active_projects_by_name, list_issues_by_name] + BASE_TOOLS
 
         agent = create_react_agent(
             model=llm, 
@@ -221,9 +229,12 @@ def recube_youtrack_reader_executor(state: AgentState):
         )
         
         # Run the agent
+        print("Invoking agent...")
         response = agent.invoke(
-            {"messages": [{"role": "user", "content": user_input}]}
+            {"messages": [{"role": "user", "content": user_input}]},
+            config={"recursion_limit": RECURSION_LIMIT}
         )
+        print("Agent response received")
         for message in reversed(response["messages"]):
             if hasattr(message, 'content') and message.content.strip():
                 return {"agent_output": message.content, "path": ["recube_calendar_assistant"]}
