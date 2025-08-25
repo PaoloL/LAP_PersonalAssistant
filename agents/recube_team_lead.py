@@ -11,6 +11,11 @@ from tools.youtrack_tool import *
 from tools.gcalendar_tool import *
 from tools.base_tools import BASE_TOOLS
 
+# Configure logging
+DEBUG_LEVEL = logging.DEBUG
+logging.basicConfig(level=DEBUG_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 # Suppress verbose error logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('langchain_aws').setLevel(logging.CRITICAL)
@@ -27,10 +32,13 @@ def load_prompt(filename):
 
 # Define Supervisor Agent for Recube team (Dynamic Control Flow)
 def recube_supervisor(state: AgentState):
+    logger.debug("recube_supervisor - ENTRY")
+    logger.debug(f"recube_supervisor - State: {state}")
     print("RECUBE TEAM LEADER: I'm ready to choose the appropriate agent for this task")
     
     try:
         user_input = state["input"]
+        logger.debug(f"recube_supervisor - User input: {user_input}")
 
         llm = ChatBedrock(
             model_id="eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
@@ -57,19 +65,27 @@ def recube_supervisor(state: AgentState):
             next_agent_to_invoke = "YoutrackAssistant"
 
         print(f"RECUBE TEAM LEADER: I'm choosed {next_agent_to_invoke}")
-        return {"next_agent": next_agent_to_invoke, "path": ["recube_supervisor"]}
+        result = {"next_agent": next_agent_to_invoke, "path": ["recube_supervisor"]}
+        logger.debug(f"recube_supervisor - Returning: {result}")
+        return result
         
     except Exception as e:
+        logger.error(f"recube_supervisor - Exception: {str(e)}")
         print(f"RECUBE TEAM LEADER: error {str(e)}")
-        return {"next_agent": "recube_youtrack_assistant", "path": ["recube_supervisor"]}
+        result = {"next_agent": "recube_youtrack_assistant", "path": ["recube_supervisor"]}
+        logger.debug(f"recube_supervisor - Error return: {result}")
+        return result
 
 # Define Router Agent to split Read from Write
 # Write operation require a planning stage
 def recube_youtrack_assistant_router(state: AgentState):
+    logger.debug("recube_youtrack_assistant_router - ENTRY")
+    logger.debug(f"recube_youtrack_assistant_router - State: {state}")
     print("YoutrackAssistant: selecting the right actions")
     
     try:
         user_input = state["input"]
+        logger.debug(f"recube_youtrack_assistant_router - User input: {user_input}")
 
         llm = ChatBedrock(
             model_id="eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
@@ -96,14 +112,21 @@ def recube_youtrack_assistant_router(state: AgentState):
             next_agent_to_invoke = "YoutrackReader"
 
         print(f"YoutrackAssistant: I'm choosed to proceed with {next_agent_to_invoke}")
-        return {"next_agent": next_agent_to_invoke, "path": ["youtrack_assistant_router"]}
+        result = {"next_agent": next_agent_to_invoke, "path": ["youtrack_assistant_router"]}
+        logger.debug(f"recube_youtrack_assistant_router - Returning: {result}")
+        return result
         
     except Exception as e:
+        logger.error(f"recube_youtrack_assistant_router - Exception: {str(e)}")
         print(f"YoutrackAssistant: error {str(e)}")
-        return {"next_agent": "recube_youtrack_assistant", "path": ["youtrack_assistant_router"]}
+        result = {"next_agent": "recube_youtrack_assistant", "path": ["youtrack_assistant_router"]}
+        logger.debug(f"recube_youtrack_assistant_router - Error return: {result}")
+        return result
 
 # Define a planner agent, before to write I want to see a plan
 def recube_youtrack_writer_planner(state: AgentState):
+    logger.debug("recube_youtrack_writer_planner - ENTRY")
+    logger.debug(f"recube_youtrack_writer_planner - State: {state}")
     YOUTRACK_PLANNING_PROMPT = load_prompt("update_youtrack.txt")
     print("YoutrackAssistant: planning YouTrack work items...")
 
@@ -132,8 +155,12 @@ def recube_youtrack_writer_planner(state: AgentState):
             task_description = state["input"]
         
         response = agent.invoke(
-            {"messages": [{"role": "user", "content": task_description}]}
+            {"messages": [{"role": "user", "content": task_description}]},
+            config={"recursion_limit": RECURSION_LIMIT}
         )
+        
+        # Log completion
+        logger.info(f"recube_youtrack_writer_planner - Agent completed successfully")
         
         # Extract plan from agent response messages
         plan = ""
@@ -153,13 +180,20 @@ def recube_youtrack_writer_planner(state: AgentState):
             modified_plan = input("\nSuggest improvement of the plan: ").strip()
             return {"agent_output": modified_plan, "next_agent": "replan", "path": ["youtrack_planner"]}
         else:
-            return {"agent_output": plan, "next_agent": "execute", "path": ["youtrack_planner"]}
+            result = {"agent_output": plan, "next_agent": "execute", "path": ["youtrack_planner"]}
+            logger.debug(f"recube_youtrack_writer_planner - Execute return: {result}")
+            return result
             
     except Exception as e:
-        return {"agent_output": f"Error: {str(e)}", "path": ["youtrack_planner"]}
+        logger.error(f"recube_youtrack_writer_planner - Exception: {str(e)}")
+        result = {"agent_output": f"Error: {str(e)}", "path": ["youtrack_planner"]}
+        logger.debug(f"recube_youtrack_writer_planner - Error return: {result}")
+        return result
 
 # Define an executor agent that execute the plan
 def recube_youtrack_writer_executor(state: AgentState):
+    logger.debug("recube_youtrack_writer_executor - ENTRY")
+    logger.debug(f"recube_youtrack_writer_executor - State: {state}")
     print("YoutrackAssistant: executing YouTrack update ...")
 
     try:
@@ -189,7 +223,8 @@ def recube_youtrack_writer_executor(state: AgentState):
         print(f"YoutrackAssistant: Executing plan ...")
         
         response = agent.invoke(
-            {"messages": [{"role": "user", "content": plan}]}
+            {"messages": [{"role": "user", "content": plan}]},
+            config={"recursion_limit": RECURSION_LIMIT}
         )
         for message in reversed(response["messages"]):
                 if hasattr(message, 'content') and message.content.strip():
@@ -201,6 +236,8 @@ def recube_youtrack_writer_executor(state: AgentState):
 
 # Define agent to read information baed on user requests        
 def recube_youtrack_reader_executor(state: AgentState):
+    logger.debug("recube_youtrack_reader_executor - ENTRY")
+    logger.debug(f"recube_youtrack_reader_executor - State: {state}")
     print("YoutrackAssistant: executing user request ...")
     try:
        
@@ -246,6 +283,8 @@ def recube_youtrack_reader_executor(state: AgentState):
 # Define Router Agent to split Read from Write
 # Write operation require a planning stage
 def recube_calendar_assistant_router(state: AgentState):
+    logger.debug("recube_calendar_assistant_router - ENTRY")
+    logger.debug(f"recube_calendar_assistant_router - State: {state}")
     print("Invoking Recube Calendar Assistant...")
     
     prompt = ChatPromptTemplate.from_messages([
@@ -269,16 +308,26 @@ def recube_calendar_assistant_router(state: AgentState):
         user_input = state["input"]
         response = llm.invoke(prompt.format(human_request=user_input))
         next_agent_to_invoke = response.content.strip()
+        logger.debug(f"recube_calendar_assistant_router - Next agent: {next_agent_to_invoke}")
         
-        for message in reversed(response["messages"]):
-            if hasattr(message, 'content') and message.content.strip():
-                return {"agent_output": message.content, "path": ["recube_calendar_assistant"]}
-        return {"agent_output": "No response generated", "path": ["recube_calendar_assistant"]}
+        # Validate LLM response
+        valid_agents = ["CalendarWriter", "CalendarReader"]
+        if next_agent_to_invoke not in valid_agents:
+            next_agent_to_invoke = "CalendarReader"
+            
+        result = {"next_agent": next_agent_to_invoke, "path": ["calendar_router"]}
+        logger.debug(f"recube_calendar_assistant_router - Returning: {result}")
+        return result
             
     except Exception as e:
-        return {"agent_output": f"Error: {str(e)}", "path": ["recube_calendar_assistant"]}
+        logger.error(f"recube_calendar_assistant_router - Exception: {str(e)}")
+        result = {"agent_output": f"Error: {str(e)}", "path": ["calendar_router"]}
+        logger.debug(f"recube_calendar_assistant_router - Error return: {result}")
+        return result
 
 def recube_calendar_writer_planner(state: AgentState):
+    logger.debug("recube_calendar_writer_planner - ENTRY")
+    logger.debug(f"recube_calendar_writer_planner - State: {state}")
     CALENDAR_PLANNING_PROMPT = load_prompt("update_calendar.txt")
     print("CalendarAssistant: planning calendar events...")
     try:
@@ -327,9 +376,13 @@ def recube_calendar_writer_planner(state: AgentState):
         return {"agent_output": f"Error: {str(e)}", "path": ["calendar_planner"]}
 
 def recube_calendar_writer_executor(state: AgentState):
+    logger.debug("recube_calendar_writer_executor - ENTRY")
+    logger.debug(f"recube_calendar_writer_executor - State: {state}")
     return None
 
 def recube_calendar_reader_executor(state: AgentState):
+    logger.debug("recube_calendar_reader_executor - ENTRY")
+    logger.debug(f"recube_calendar_reader_executor - State: {state}")
     return None
 
 # Define the Sub-graph for the Recube team
@@ -383,8 +436,11 @@ def create_recube_team_graph():
         }
     )
     
-    recube_workflow.add_edge("youtrack_writer_executor", END)
     recube_workflow.add_edge("calendar_writer_planner", "calendar_writer_executor")
+
+    recube_workflow.add_edge("youtrack_writer_executor", END)
     recube_workflow.add_edge("calendar_writer_executor", END)
+    recube_workflow.add_edge("youtrack_reader_executor", END)
+    recube_workflow.add_edge("calendar_reader_executor", END)
 
     return recube_workflow.compile(checkpointer=None)

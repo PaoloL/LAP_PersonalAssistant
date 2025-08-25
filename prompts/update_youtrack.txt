@@ -25,6 +25,6 @@ In case of suggestion from user
 1. When the user explicitly names a project or issue you MUST use that exact entity. 
 2. If the issue does not exist in a project, propose a first step to create it (in execution phase)
 
-Respond ONLY with the plan following this structure (one line per work item):
-- Day: dd/mm/yyyy, Time: HH:MM-HH:MM, Project Name: [name], Issue Name: [name], Issue ID: [id], Duration: [X hours], Description: [text]
+Respond ONLY with the plan in this format (one line per work item):
+- dd/mm/yyyy - Project [name] - Issue [name] with [id] - Duration: [X hours]
 

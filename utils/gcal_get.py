@@ -10,7 +10,7 @@ from .gcal_auth import get_credentials
 
 # If modifying these scopes, delete the file token.json.
 
-def get_events(start_date, days_window):
+def get_events(start_date, end_date):
     """ 
     Get events from Google Calendar starting from start_Date and for the specified number of days
     """
@@ -23,10 +23,11 @@ def get_events(start_date, days_window):
         # Handle different date formats
         try:
             start_date = datetime.datetime.fromisoformat(start_date)
+            end_date = datetime.datetime.fromisoformat(end_date)
         except ValueError:
             # Try parsing as YYYY-MM-DD format
             start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-        end_date = start_date + datetime.timedelta(days=int(days_window))
+            end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
         # Convert date in Gcal required format
         start_iso = start_date.isoformat() + 'Z'
         end_iso = end_date.isoformat() + 'Z'

@@ -7,10 +7,10 @@ from utils.gcal_get import get_events
 from utils.gcal_set import create_event
 
 @tool
-def get_gcal_events(start_date: str, days_window: int) -> str:
+def get_gcal_events(start_date: str, end_date: int) -> str:
     """Get events from Google Calendar starting from start_date for specified number of days"""
     try:
-        events = get_events(start_date, days_window)
+        events = get_events(start_date, end_date)
         return str(events)
     except Exception as e:
         return f"Error: {str(e)}"

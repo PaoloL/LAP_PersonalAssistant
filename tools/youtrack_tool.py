@@ -81,13 +81,9 @@ def get_issue_id_from_issue_name(issue_name):
     try:
         issues_list = youtrack_get.convert_issueName_to_issueId(issue_name, LIMIT)
         if issues_list and len(issues_list) > 0:
-            print(f"IF {issue_name}")
-            print(issues_list[0].get('id'))
             return issues_list[0].get('id')
             
         else:
-            print("ELSE")
-            print(f"IF {issue_name}")
             return "AI-121"
     except Exception as e:
         print("ERROR")
