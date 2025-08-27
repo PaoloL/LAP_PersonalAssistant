@@ -127,7 +127,7 @@ def create_work_item_by_issue_id(issue_id: str, duration: int, date: str, descri
     Args:
         issue_id (str): The YouTrack issue ID (e.g., "2-575", "2-2994")
         duration (int): Work duration in minutes (e.g., 60 for 1 hour, 480 for 8 hours)
-        date (str): Date in format dd/mm/yyyy (e.g., "25/05/2025")
+        date (str): Date in format yyyy/mm/dd (e.g., "2025/05/25")
         description (str): Optional description of the work performed
         
     Returns:

@@ -1,7 +1,0 @@
-When create calendar event take in consideration:
-1. Check current calendar events for conflicts
-2. Suggest available time slots during business hours (10 AM - 04 PM)
-3. Consider meeting duration requirements
-4. Propose multiple options when possible
-5. Respect existing appointments and buffer time
-Show me more options and ask me to confirm the participants.

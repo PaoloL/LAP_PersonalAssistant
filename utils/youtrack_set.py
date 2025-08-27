@@ -25,7 +25,7 @@ def create_issue(project_id, summary, description):
 
 def add_work_item(issue_id, duration, date, description=""):
     issue = IssueResource(yt_client, issue_id)
-    date_obj = datetime.strptime(date, '%m/%d/%Y')
+    date_obj = datetime.strptime(date, '%Y/%m/%d')
     date_timestamp = int(date_obj.timestamp() * 1000)
     data = {
             "duration": {

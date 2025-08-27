@@ -10,13 +10,13 @@ from langgraph.prebuilt import create_react_agent
 from langchain_core.prompts import ChatPromptTemplate
 
 # Import the functions to create team sub-graphs
-from agents.recube_team_lead import create_recube_team_graph
-from agents.personal_team_lead import create_personal_team_graph
+from agents.calendar_manager import conversational_calendar
+from agents.youtrack_manager import conversational_youtrack
 
 from tools.base_tools import BASE_TOOLS
 
 # Configure logging
-DEBUG_LEVEL = logging.DEBUG
+DEBUG_LEVEL = logging.ERROR
 logging.basicConfig(level=DEBUG_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -24,11 +24,11 @@ logger = logging.getLogger(__name__)
 async def main_supervisor(state: AgentState):
     logger.debug("main_supervisor - ENTRY")
     logger.debug(f"main_supervisor - State: {state}")
-    print("MAIN ASSISTANT: Hello, I'm the Main Assistant Supervisor deciding using LLM...")
+    print("MAIN ASSISTANT: Hello, I'm the Main Assistant Supervisor")
     
     try:
-        user_input = state["input"]
-        logger.debug(f"main_supervisor - User input: {user_input}")
+        request = state["human_request"]
+        logger.debug(f"main_supervisor - User input: {request}")
 
         llm = ChatBedrock(
             model_id="eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
@@ -39,50 +39,43 @@ async def main_supervisor(state: AgentState):
         # Create prompt for agent selection
         prompt = ChatPromptTemplate.from_messages([
             ("system",
-                "You are a personal assistant that support user on business and personal task\n"
-                "You are responsible to choose the appropriate team leader based on user input:\n"
-                "- RecubeTeamLeader: for YouTrack, Calendar and Business activities\n"
-                "- PersonalTeamLeader: for Task, Finance and Personal activities\n"
+                "You are a supervisor\n"
+                "You are responsible to choose the appropriate agent for task execution based on user input:\n"
+                 "- YoutrackManager: for YouTrack request as update work items or list issues\n"
+                 "- CalendarManager: for calendar request as list or create meetings\n"
                 "Respond with ONLY the agent name."),
-            ("human", "{human_request}")
+            ("human", "{request}")
         ])
-
-        response = llm.invoke(prompt.format(human_request=user_input))
+        print("MAIN ASSISTANT: I'm deciding the next agent using LLM ...")
+        response = llm.invoke(prompt.format(request=request))
         next_team_to_invoke = response.content.strip()
 
         # Validate LLM response
-        valid_teams = ["RecubeTeamLeader", "PersonalTeamLeader"]
+        valid_teams = ["YoutrackManager", "CalendarManager"]
         if next_team_to_invoke not in valid_teams:
-            next_team_to_invoke = "RecubeTeamLeader"       
-
-        print(f"MAIN ASSISTANT: I want to ask support to: {next_team_to_invoke}")
-        result = {"next_agent": next_team_to_invoke, "path": ["main_assistant"]}
-        logger.debug(f"main_supervisor - Returning: {result}")
-        return result
+            print(f"MAIN ASSISTANT: I'm not able to decide, bye")  
+            return
+        else:
+            print(f"MAIN ASSISTANT: I want to ask support to: {next_team_to_invoke}")
+            result = {"next_agent": next_team_to_invoke, "current_path": ["main_assistant"]}
+            logger.debug(f"main_supervisor - Returning: {result}")
+            return result
     
     except Exception as e:
         logger.error(f"main_supervisor - Exception: {str(e)}")
         print("MAIN ASSISTANT: Error ", e)
-        result = {"next_agent": "RecubeTeamLeader", "path": ["main_assistant"]}
+        result = {"next_agent": "RecubeTeamLeader", "current_path": ["main_assistant"]}
         logger.debug(f"main_supervisor - Error return: {result}")
         return result
 
 # Define the Main Hierarchical Graph
 def create_hierarchical_graph():
-    logger.debug("create_hierarchical_graph - ENTRY")
+    logger.debug("create_hierarchical_graph - entry")
+    
     main_workflow = StateGraph(AgentState)
-
-    # Compile the sub-graphs imported from their respective files
-    logger.debug("create_hierarchical_graph - Creating recube team graph")
-    recube_team_compiled = create_recube_team_graph()
-    logger.debug("create_hierarchical_graph - Creating personal team graph")
-    personal_team_compiled = create_personal_team_graph()
-
     main_workflow.add_node("main_supervisor", main_supervisor)
-    main_workflow.add_node("recube_team_node", recube_team_compiled)
-    main_workflow.add_node("personal_team_node", personal_team_compiled)
-
-    # Set the entry point of the main graph
+    main_workflow.add_node("calendar_manager_node", conversational_calendar)
+    main_workflow.add_node("youtrack_manager_node", conversational_youtrack)
     main_workflow.set_entry_point("main_supervisor")
 
     # The main supervisor transitions to the appropriate sub-graph node
@@ -90,14 +83,13 @@ def create_hierarchical_graph():
         "main_supervisor",
         lambda state: state["next_agent"],
         {
-            "RecubeTeamLeader": "recube_team_node",
-            "PersonalTeamLeader": "personal_team_node",
+            "YoutrackManager": "youtrack_manager_node",
+            "CalendarManager": "calendar_manager_node",
         }
     )
 
-    # When a sub-graph node finishes, the main graph also ends.
-    main_workflow.add_edge("recube_team_node", END)
-    main_workflow.add_edge("personal_team_node", END)
+    main_workflow.add_edge("youtrack_manager_node", END)
+    main_workflow.add_edge("calendar_manager_node", END)
 
     # Compile the main graph
     logger.debug("create_hierarchical_graph - Compiling main workflow")
@@ -111,21 +103,20 @@ async def interactive_chat():
     print("Type 'exit' or 'quit' to end the session\n")
     while True:
         try:
-            user_input = input("You: ").strip()
-            logger.debug(f"interactive_chat - User input: {user_input}")
-            if user_input.lower() in ['exit', 'quit', 'bye']:
+            request = input("YOU: ").strip()
+            logger.debug(f"interactive_chat - User input: {request}")
+            if request.lower() in ['exit', 'quit', 'bye']:
                 logger.debug("interactive_chat - User requested exit")
                 print("Goodbye!")
                 break
-            if not user_input:
+            if not request:
                 continue
-            print(f"\nProcessing: {user_input}")
-            inputs = {"input": user_input, "agent_output": "", "next_agent": "", "path": []}
+            print(f"\nMAIN ASSISTANT: Processing: {request}")
+            inputs = {"human_request": request, "agent_output": "", "next_agent": "", "current_path": []}
             logger.debug(f"interactive_chat - Invoking app with inputs: {inputs}")
             result = await app.ainvoke(inputs)
             logger.debug(f"interactive_chat - App result: {result}")
 
-            # Since result is already a dict, use it directly
             final_agent_output = result.get("agent_output", "")
             logger.debug(f"interactive_chat - Final agent output: {final_agent_output}")
             formatted_output = final_agent_output.replace('\\n', '\n').replace('\\t', '\t')
