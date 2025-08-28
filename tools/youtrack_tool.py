@@ -140,3 +140,27 @@ def create_work_item_by_issue_id(issue_id: str, duration: int, date: str, descri
         return str(result)
     except Exception as e:
         return f"Error: {str(e)}"
+    
+@tool
+def create_issue_by_project_name(project_name: str, summary: str, description: str = "") -> str:
+    """Create an issue in a YouTrack project by searching for project name.
+
+    Args:
+        project_name (str): The exact name of the YouTrack project
+        summary (str): Summary/title of the issue to be created
+        description (str): Optional description of the issue
+
+    Returns:
+        Success/failure message from YouTrack API
+
+    Note: This searches through all projects to find the project by name.
+    """
+    try:
+        # Get all projects with specific fields
+        projects = youtrack_get.list_projects(LIMIT)
+        for project in projects:
+            if project.get('name') == project_name:
+                result = youtrack_set.create_issue(project.get('id'), summary, description)
+                return str(result)
+    except Exception as e:
+        return f"Error: {str(e)}"

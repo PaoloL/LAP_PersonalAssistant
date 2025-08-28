@@ -21,10 +21,12 @@ logging.basicConfig(level=DEBUG_LEVEL, format='%(asctime)s - %(levelname)s - %(m
 logger = logging.getLogger(__name__)
 
 # Define the Main Assistant Supervisor
+
 async def main_supervisor(state: AgentState):
     logger.debug("main_supervisor - ENTRY")
     logger.debug(f"main_supervisor - State: {state}")
-    print("MAIN ASSISTANT: Hello, I'm the Main Assistant Supervisor")
+
+    print("MAIN ASSISTANT: I'm working on your request")
     
     try:
         request = state["human_request"]
@@ -99,15 +101,16 @@ def create_hierarchical_graph():
 
 async def interactive_chat():
     logger.debug("interactive_chat - ENTRY")
-    print("Multi-Agent Assistant Ready!")
-    print("Type 'exit' or 'quit' to end the session\n")
+    print("MAIN ASSISTANT: Hello, I'm the Main Assistant, how I can support you today ?")
+    print("MAIN ASSISTANT: Ask me to manage YouTrack, or ask me to manage calendar events")
+    print("MAIN ASSISTANT: Type 'exit' or 'quit' to end the session")
     while True:
         try:
             request = input("YOU: ").strip()
             logger.debug(f"interactive_chat - User input: {request}")
             if request.lower() in ['exit', 'quit', 'bye']:
                 logger.debug("interactive_chat - User requested exit")
-                print("Goodbye!")
+                print("MAIN ASSISTANT: Bye, see you later!\n")
                 break
             if not request:
                 continue
@@ -121,7 +124,7 @@ async def interactive_chat():
             logger.debug(f"interactive_chat - Final agent output: {final_agent_output}")
             formatted_output = final_agent_output.replace('\\n', '\n').replace('\\t', '\t')
 
-            print(f"MAIN ASSISTANT: Final agent output: {formatted_output}\n")
+            print(f"MAIN ASSISTANT: Final agent output: {formatted_output}")
             
         except KeyboardInterrupt:
             logger.debug("interactive_chat - KeyboardInterrupt received")
